@@ -62,22 +62,23 @@ public class CustomEdgeOrchestrator extends EdgeOrchestrator {
 		//RODO: return proper host ID
 
 		//dummy task to simulate a task with 1 Mbit file size to upload and download
-		Task dummyTask = new Task(0, 0, 0, 0,
-				128, 128, new UtilizationModelFull(),
-				new UtilizationModelFull(), new UtilizationModelFull());
+//		Task dummyTask = new Task(0, 0, 0, 0,
+//				128, 128, new UtilizationModelFull(),
+//				new UtilizationModelFull(), new UtilizationModelFull());
 
-		double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
-				task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, dummyTask /* 1 Mbit */);
-
-		double wanBW = (wanDelay == 0) ? 0 : (1 / wanDelay); /* Mbps */
-
-		double edgeUtilization = SimManager.getInstance().getEdgeServerManager().getAvgUtilization();
-
-		double wlanDelay =SimManager.getInstance().getNetworkModel().getUploadDelay(
-				task.getMobileDeviceId(), SimSettings.GENERIC_EDGE_DEVICE_ID, dummyTask);
+//		double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
+//				task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, dummyTask /* 1 Mbit */);
 
 
-		double wlanBw = (wlanDelay == 0) ? 0 : (1 / wlanDelay); /* Mbps */
+
+//		double wlanDelay =SimManager.getInstance().getNetworkModel().getUploadDelay(
+//				task.getMobileDeviceId(), SimSettings.GENERIC_EDGE_DEVICE_ID, dummyTask);
+
+//		double wlanDelay =SimManager.getInstance().getNetworkModel().getUploadDelay(
+//				task.getMobileDeviceId(), SimSettings.GENERIC_EDGE_DEVICE_ID, task);
+//
+//
+//		double wlanBw = (wlanDelay == 0) ? 0 : (1 / wlanDelay); /* Mbps */
 
 
 		if (policy.equals("ONLY_EDGE")) {
@@ -89,17 +90,21 @@ public class CustomEdgeOrchestrator extends EdgeOrchestrator {
 			// to decide whether the task should be performed on the mobile, offloaded to the edge device
 			// or to the cloud data center
 
-			List<MobileVM> mobileVMList = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
-			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(
-				mobileVMList.get(0).getVmType());
+			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
+			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
+			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 
-			double targetCapacity = (double)100 - mobileVMList.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-
-			if (requiredCapacity <= targetCapacity) {
+			if (requiredCapacity <= targetVmCapacity) {
 				result = SimSettings.MOBILE_DATACENTER_ID;
 			} else {
-				double utilization = edgeUtilization;
-				if (wanBW < wlanBw && utilization > 60) {
+				double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
+						task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
+
+				double wanBW = (wanDelay == 0) ? 0 : (1 / wanDelay); /* Mbps */
+
+				double edgeUtilization = SimManager.getInstance().getEdgeServerManager().getAvgUtilization();
+
+				if (wanBW > 6 && edgeUtilization > 60) {
 					result = SimSettings.CLOUD_DATACENTER_ID;
 				} else {
 					result = SimSettings.GENERIC_EDGE_DEVICE_ID;

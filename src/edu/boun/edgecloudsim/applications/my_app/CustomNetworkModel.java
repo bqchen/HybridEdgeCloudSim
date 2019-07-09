@@ -1,16 +1,16 @@
 /*
  * Title:        EdgeCloudSim - Network Model
- * 
- * Description: 
+ *
+ * Description:
  * SampleNetworkModel uses
  * -> the result of an empirical study for the WLAN and WAN delays
  * The experimental network model is developed
  * by taking measurements from the real life deployments.
- *   
+ *
  * -> MMPP/MMPP/1 queue model for MAN delay
  * MAN delay is observed via a single server queue model with
  * Markov-modulated Poisson process (MMPP) arrivals.
- *   
+ *
  * Licence:      GPL - http://www.gnu.org/copyleft/gpl.html
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
@@ -34,7 +34,7 @@ public class CustomNetworkModel extends NetworkModel {
 	private int manClients;
 	private int[] wanClients;
 	private int[] wlanClients;
-	
+
 	private double lastMM1QueeuUpdateTime;
 	private double ManPoissonMeanForDownload; //seconds
 	private double ManPoissonMeanForUpload; //seconds
@@ -47,7 +47,7 @@ public class CustomNetworkModel extends NetworkModel {
 	private double totalManTaskOutputSize;
 	private double numOfManTaskForDownload;
 	private double numOfManTaskForUpload;
-	
+
 	public static final double[] experimentalWlanDelay = {
 		/*1 Client*/ 88040.279 /*(Kbps)*/,
 		/*2 Clients*/ 45150.982 /*(Kbps)*/,
@@ -151,7 +151,7 @@ public class CustomNetworkModel extends NetworkModel {
 		/*99 Clients*/ 1504.844 /*(Kbps)*/,
 		/*100 Clients*/ 1500.631 /*(Kbps)*/
 	};
-	
+
 	public static final double[] experimentalWanDelay = {
 		/*1 Client*/ 20703.973 /*(Kbps)*/,
 		/*2 Clients*/ 12023.957 /*(Kbps)*/,
@@ -179,7 +179,7 @@ public class CustomNetworkModel extends NetworkModel {
 		/*24 Clients*/ 1358.411 /*(Kbps)*/,
 		/*25 Clients*/ 1311.131 /*(Kbps)*/
 	};
-	
+
 	public CustomNetworkModel(int _numberOfMobileDevices, String _simScenario) {
 		super(_numberOfMobileDevices, _simScenario);
 	}
@@ -198,11 +198,11 @@ public class CustomNetworkModel extends NetworkModel {
 			}
 			else{
 				double weight = SS.getTaskLookUpTable()[taskIndex][0]/(double)100;
-				
+
 				//assume half of the tasks use the MAN at the beginning
 				ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][2])*weight) * 4;
 				ManPoissonMeanForUpload = ManPoissonMeanForDownload;
-				
+
 				avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][5]*weight;
 				avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][6]*weight;
 			}
@@ -212,7 +212,7 @@ public class CustomNetworkModel extends NetworkModel {
 		ManPoissonMeanForUpload = ManPoissonMeanForUpload/numOfApp;
 		avgManTaskInputSize = avgManTaskInputSize/numOfApp;
 		avgManTaskOutputSize = avgManTaskOutputSize/numOfApp;
-		
+
 		lastMM1QueeuUpdateTime = SimSettings.CLIENT_ACTIVITY_START_TIME;
 		totalManTaskOutputSize = 0;
 		numOfManTaskForDownload = 0;
@@ -226,12 +226,13 @@ public class CustomNetworkModel extends NetworkModel {
 	@Override
 	public double getUploadDelay(int sourceDeviceId, int destDeviceId, Task task) {
 		double delay = 0;
-		
-		//special case for man communication
+
+		//special case for MAN communication
 		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
-			return delay = getManUploadDelay();
+			delay = getManUploadDelay();
+			return delay;
 		}
-		
+
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
 
 		//mobile device to cloud server
@@ -242,7 +243,11 @@ public class CustomNetworkModel extends NetworkModel {
 		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanUploadDelay(accessPointLocation, task.getCloudletFileSize());
 		}
-		
+		else {
+			SimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
+			System.exit(0);
+		}
+
 		return delay;
 	}
 
@@ -252,23 +257,23 @@ public class CustomNetworkModel extends NetworkModel {
 	@Override
 	public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
 		double delay = 0;
-		
-		//special case for man communication
+
+		//special case for MAN communication
 		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
 			return delay = getManDownloadDelay();
 		}
-		
+
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
-		
+
 		//cloud server to mobile device
-		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+		if (sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID) {
 			delay = getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
 		}
 		//edge device (wifi access point) to mobile device
-		else{
+		else {
 			delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
 		}
-		
+
 		return delay;
 	}
 
@@ -332,88 +337,88 @@ public class CustomNetworkModel extends NetworkModel {
 		int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
 		double taskSizeInKb = dataSize * (double)8; //KB to Kb
 		double result=0;
-		
+
 		if(numOfWlanUser < experimentalWlanDelay.length)
 			result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
 
 		//System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 		return result;
 	}
-	
+
 	//wlan upload and download delay is symmetric in this model
 	private double getWlanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWlanDownloadDelay(accessPointLocation, dataSize);
 	}
-	
+
 	private double getWanDownloadDelay(Location accessPointLocation, double dataSize) {
 		int numOfWanUser = wanClients[accessPointLocation.getServingWlanId()];
 		double taskSizeInKb = dataSize * (double)8; //KB to Kb
 		double result=0;
-		
+
 		if(numOfWanUser < experimentalWanDelay.length)
 			result = taskSizeInKb /*Kb*/ / (experimentalWanDelay[numOfWanUser]) /*Kbps*/;
-		
+
 		//System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
-		
+
 		return result;
 	}
-	
+
 	//wan upload and download delay is symmetric in this model
 	private double getWanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWanDownloadDelay(accessPointLocation, dataSize);
 	}
-	
+
 	private double calculateMM1(double propogationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
 		double mu=0, lamda=0;
-		
+
 		avgTaskSize = avgTaskSize * 8; //convert from KB to Kb
 
         lamda = ((double)1/(double)PoissonMean); //task per seconds
 		mu = bandwidth /*Kbps*/ / avgTaskSize /*Kb*/; //task per seconds
 		double result = (double)1 / (mu-lamda*(double)deviceCount);
-		
+
 		if(result < 0)
 			return 0;
-		
+
 		result += propogationDelay;
-		
+
 		return (result > 15) ? 0 : result;
 	}
-	
+
 	private double getManDownloadDelay() {
 		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
 				MAN_BW,
 				ManPoissonMeanForDownload,
 				avgManTaskOutputSize,
 				numberOfMobileDevices);
-		
+
 		totalManTaskOutputSize += avgManTaskOutputSize;
 		numOfManTaskForDownload++;
-		
+
 		//System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
-		
+
 		return result;
 	}
-	
+
 	private double getManUploadDelay() {
 		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
 				MAN_BW,
 				ManPoissonMeanForUpload,
 				avgManTaskInputSize,
 				numberOfMobileDevices);
-		
+
 		totalManTaskInputSize += avgManTaskInputSize;
 		numOfManTaskForUpload++;
 
 		//System.out.println(CloudSim.clock() + " -> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " + result + " sec");
-		
+
 		return result;
 	}
-	
+
 	public void updateMM1QueeuModel(){
 		double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
 		lastMM1QueeuUpdateTime = CloudSim.clock();
-		
+
 		if(numOfManTaskForDownload != 0){
 			ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
 			avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
@@ -422,7 +427,7 @@ public class CustomNetworkModel extends NetworkModel {
 			ManPoissonMeanForUpload = lastInterval / (numOfManTaskForUpload / (double)numberOfMobileDevices);
 			avgManTaskInputSize = totalManTaskInputSize / numOfManTaskForUpload;
 		}
-		
+
 		totalManTaskOutputSize = 0;
 		numOfManTaskForDownload = 0;
 		totalManTaskInputSize = 0;
