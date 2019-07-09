@@ -25,3 +25,6 @@ bin
 *.iml
 out
 gen
+
+# experiment result files
+sim_results
