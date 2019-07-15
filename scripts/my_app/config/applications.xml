@@ -8,8 +8,8 @@
 		<active_period>40</active_period>
 		<idle_period>20</idle_period>
 		<data_upload>1500</data_upload>
-		<data_download>250</data_download>
-		<task_length>12000</task_length>
+		<data_download>25</data_download>
+		<task_length>9000</task_length>
 		<required_core>1</required_core>
 		<vm_utilization_on_edge>8</vm_utilization_on_edge>
 		<vm_utilization_on_cloud>0.8</vm_utilization_on_cloud>
@@ -22,9 +22,9 @@
 		<delay_sensitivity>0</delay_sensitivity>
 		<active_period>45</active_period>
 		<idle_period>90</idle_period>
-		<data_upload>200</data_upload>
+		<data_upload>20</data_upload>
 		<data_download>1250</data_download>
-		<task_length>6000</task_length>
+		<task_length>3000</task_length>
 		<required_core>1</required_core>
 		<vm_utilization_on_edge>4</vm_utilization_on_edge>
 		<vm_utilization_on_cloud>0.4</vm_utilization_on_cloud>
@@ -39,7 +39,7 @@
 		<idle_period>120</idle_period>
 		<data_upload>2500</data_upload>
 		<data_download>200</data_download>
-		<task_length>30000</task_length>
+		<task_length>45000</task_length>
 		<required_core>1</required_core>
 		<vm_utilization_on_edge>20</vm_utilization_on_edge>
 		<vm_utilization_on_cloud>2</vm_utilization_on_cloud>
@@ -52,7 +52,7 @@
 		<delay_sensitivity>0</delay_sensitivity>
 		<active_period>30</active_period>
 		<idle_period>45</idle_period>
-		<data_upload>250</data_upload>
+		<data_upload>25</data_upload>
 		<data_download>1000</data_download>
 		<task_length>15000</task_length>
 		<required_core>1</required_core>

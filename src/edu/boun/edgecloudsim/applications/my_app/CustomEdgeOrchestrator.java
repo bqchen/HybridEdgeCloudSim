@@ -69,7 +69,12 @@ public class CustomEdgeOrchestrator extends EdgeOrchestrator {
 //		double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
 //				task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, dummyTask /* 1 Mbit */);
 
+		double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
+				task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
 
+		double wanBW = (wanDelay == 0) ? 0 : (1 / wanDelay); /* Mbps */
+
+		double edgeUtilization = SimManager.getInstance().getEdgeServerManager().getAvgUtilization();
 
 //		double wlanDelay =SimManager.getInstance().getNetworkModel().getUploadDelay(
 //				task.getMobileDeviceId(), SimSettings.GENERIC_EDGE_DEVICE_ID, dummyTask);
@@ -86,30 +91,120 @@ public class CustomEdgeOrchestrator extends EdgeOrchestrator {
 		} else if (policy.equals("ONLY_MOBILE")) {
 			result = SimSettings.MOBILE_DATACENTER_ID;
 		} else if (policy.equals("HYBRID")) {
-			// To modify the policy
+			// Todo: modify the policy
 			// to decide whether the task should be performed on the mobile, offloaded to the edge device
 			// or to the cloud data center
 
-			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
-			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
-			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 
-			if (requiredCapacity <= targetVmCapacity) {
-				result = SimSettings.MOBILE_DATACENTER_ID;
+			List<EdgeVM> edgeVMList = SimManager.getInstance().getEdgeServerManager().getVmList(task.getAssociatedHostId());
+			double requiredEdgeVmCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(edgeVMList.get(0).getVmType());
+			double targetEdgeVmCapacity = (double)100 - edgeVMList.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+
+			if (wanBW < 6 && requiredEdgeVmCapacity <= targetEdgeVmCapacity) {
+				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 			} else {
-				double wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
-						task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
+				List<MobileVM> mobileVMList = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
+				double requiredMobileVmCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(mobileVMList.get(0).getVmType());
+				double targetMobileVmCapacity = (double)100 - mobileVMList.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 
-				double wanBW = (wanDelay == 0) ? 0 : (1 / wanDelay); /* Mbps */
-
-				double edgeUtilization = SimManager.getInstance().getEdgeServerManager().getAvgUtilization();
-
-				if (wanBW > 6 && edgeUtilization > 60) {
-					result = SimSettings.CLOUD_DATACENTER_ID;
+				if (requiredMobileVmCapacity <= targetMobileVmCapacity) {
+					result = SimSettings.MOBILE_DATACENTER_ID;
 				} else {
-					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+					result = SimSettings.CLOUD_DATACENTER_ID;
+
+					// check
+					wanDelay = SimManager.getInstance().getNetworkModel().getUploadDelay(
+							task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
+					wanBW = (wanDelay == 0) ? 0 : (1 / wanDelay);
+
+					if (wanBW <= 6 && Math.abs(wanBW - 6) - Math.abs(edgeUtilization - 70) >= 0) {
+						result = SimSettings.MOBILE_DATACENTER_ID;
+					}
+
 				}
 			}
+
+
+
+
+
+
+
+			// Success: 6	70
+//			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
+////			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
+////			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+////
+////
+////			if (requiredCapacity <= targetVmCapacity) {
+////				if (wanBW > 6 && edgeUtilization > 70) {
+////					if ((wanBW - 6) - (edgeUtilization - 70) >= 0) {
+////						result = SimSettings.MOBILE_DATACENTER_ID;
+////					} else {
+////						result = SimSettings.CLOUD_DATACENTER_ID;
+////					}
+////				} else {
+////					if (Math.abs(wanBW - 6) - Math.abs(edgeUtilization - 70) >= 0) {
+////						result = SimSettings.MOBILE_DATACENTER_ID;
+////					} else {
+////						result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+////					}
+////				}
+////			} else {
+////				if (wanBW > 6 && edgeUtilization > 70) {
+////					if ((wanBW - 6) - (edgeUtilization - 70) >= 0) {
+////						result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+////					} else {
+////						result = SimSettings.CLOUD_DATACENTER_ID;
+////					}
+////				} else {
+////					if (Math.abs(wanBW - 6) - Math.abs(edgeUtilization - 70) >= 0) {
+////						result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+////					} else {
+////						result = SimSettings.CLOUD_DATACENTER_ID;
+////					}
+////				}
+////			}
+
+
+
+
+//			if (requiredCapacity > targetVmCapacity || wanBW <= 6 || edgeUtilization <= 60) {
+//				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+//			} else if (wanBW > 6 && edgeUtilization > 60) {
+//				result = SimSettings.CLOUD_DATACENTER_ID;
+//			} else {
+//				result = SimSettings.MOBILE_DATACENTER_ID;
+//			}
+
+
+
+//			if (wanBW > 6 && edgeUtilization > 60) {
+//				result = SimSettings.CLOUD_DATACENTER_ID;
+//			} else {
+//
+//				List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
+//				double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
+//				double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+//
+//				if (requiredCapacity <= targetVmCapacity) {
+//					result = SimSettings.MOBILE_DATACENTER_ID;
+//				} else {
+//					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+//				}
+//			}
+
+
+//			if (requiredCapacity <= targetVmCapacity) {
+//				result = SimSettings.MOBILE_DATACENTER_ID;
+//			} else {
+//				double utilization = edgeUtilization;
+//				if (wanBW > 6 && utilization > 60) {
+//					result = SimSettings.CLOUD_DATACENTER_ID;
+//				} else {
+//					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+//				}
+//			}
 
 		} else {
 			SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");

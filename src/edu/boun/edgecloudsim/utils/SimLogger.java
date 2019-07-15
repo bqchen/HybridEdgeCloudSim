@@ -564,36 +564,67 @@ public class SimLogger {
 			}
 		}
 
+		// Todo: modify the printout information
 		// printout important results
-		printLine("# of tasks (Edge/Cloud/Mobile): "
-				+ (failedTask[numOfAppTypes] + completedTask[numOfAppTypes]) + "("
-				+ (failedTaskOnEdge[numOfAppTypes] + completedTaskOnEdge[numOfAppTypes]) + "/" 
-				+ (failedTaskOnCloud[numOfAppTypes]+ completedTaskOnCloud[numOfAppTypes]) + "/" 
-				+ (failedTaskOnMobile[numOfAppTypes]+ completedTaskOnMobile[numOfAppTypes]) + ")");
-		
-		printLine("# of failed tasks (Edge/Cloud/Mobile): "
+		printLine("# of tasks (Cloud/Edge/Mobile): "
+				+ (completedTask[numOfAppTypes] + failedTask[numOfAppTypes] + uncompletedTask[numOfAppTypes]) + "("
+				+ (completedTaskOnCloud[numOfAppTypes] + failedTaskOnCloud[numOfAppTypes] + uncompletedTaskOnCloud[numOfAppTypes]) + "/"
+				+ (completedTaskOnEdge[numOfAppTypes] + failedTaskOnEdge[numOfAppTypes] + uncompletedTaskOnEdge[numOfAppTypes]) + "/"
+				+ (completedTaskOnMobile[numOfAppTypes] + failedTaskOnMobile[numOfAppTypes] + uncompletedTaskOnMobile[numOfAppTypes]) + ")");
+
+//		printLine("# of tasks (Edge/Cloud/Mobile): "
+//				+ (failedTask[numOfAppTypes] + completedTask[numOfAppTypes]) + "("
+//				+ (failedTaskOnEdge[numOfAppTypes] + completedTaskOnEdge[numOfAppTypes]) + "/"
+//				+ (failedTaskOnCloud[numOfAppTypes]+ completedTaskOnCloud[numOfAppTypes]) + "/"
+//				+ (failedTaskOnMobile[numOfAppTypes]+ completedTaskOnMobile[numOfAppTypes]) + ")");
+
+		printLine("# of failed tasks (Cloud/Edge/Mobile): "
 				+ failedTask[numOfAppTypes] + "("
-				+ failedTaskOnEdge[numOfAppTypes] + "/"
 				+ failedTaskOnCloud[numOfAppTypes] + "/"
+				+ failedTaskOnEdge[numOfAppTypes] + "/"
 				+ failedTaskOnMobile[numOfAppTypes] + ")");
 		
-		printLine("# of completed tasks (Edge/Cloud/Mobile): "
+//		printLine("# of failed tasks (Edge/Cloud/Mobile): "
+//				+ failedTask[numOfAppTypes] + "("
+//				+ failedTaskOnEdge[numOfAppTypes] + "/"
+//				+ failedTaskOnCloud[numOfAppTypes] + "/"
+//				+ failedTaskOnMobile[numOfAppTypes] + ")");
+
+		printLine("# of completed tasks (Cloud/Edge/Mobile): "
 				+ completedTask[numOfAppTypes] + "("
-				+ completedTaskOnEdge[numOfAppTypes] + "/"
 				+ completedTaskOnCloud[numOfAppTypes] + "/"
+				+ completedTaskOnEdge[numOfAppTypes] + "/"
 				+ completedTaskOnMobile[numOfAppTypes] + ")");
-		
-		printLine("# of uncompleted tasks (Edge/Cloud/Mobile): "
+
+//		printLine("# of completed tasks (Edge/Cloud/Mobile): "
+//				+ completedTask[numOfAppTypes] + "("
+//				+ completedTaskOnEdge[numOfAppTypes] + "/"
+//				+ completedTaskOnCloud[numOfAppTypes] + "/"
+//				+ completedTaskOnMobile[numOfAppTypes] + ")");
+
+		printLine("# of uncompleted tasks (Cloud/Edge/Mobile): "
 				+ uncompletedTask[numOfAppTypes] + "("
-				+ uncompletedTaskOnEdge[numOfAppTypes] + "/"
 				+ uncompletedTaskOnCloud[numOfAppTypes] + "/"
+				+ uncompletedTaskOnEdge[numOfAppTypes] + "/"
 				+ uncompletedTaskOnMobile[numOfAppTypes] + ")");
 
-		printLine("# of failed tasks due to vm capacity (Edge/Cloud/Mobile): "
+//		printLine("# of uncompleted tasks (Edge/Cloud/Mobile): "
+//				+ uncompletedTask[numOfAppTypes] + "("
+//				+ uncompletedTaskOnEdge[numOfAppTypes] + "/"
+//				+ uncompletedTaskOnCloud[numOfAppTypes] + "/"
+//				+ uncompletedTaskOnMobile[numOfAppTypes] + ")");
+
+		printLine("# of failed tasks due to vm capacity (Cloud/Edge/Mobile): "
 				+ failedTaskDueToVmCapacity[numOfAppTypes] + "("
-				+ failedTaskDueToVmCapacityOnEdge[numOfAppTypes] + "/"
 				+ failedTaskDueToVmCapacityOnCloud[numOfAppTypes] + "/"
+				+ failedTaskDueToVmCapacityOnEdge[numOfAppTypes] + "/"
 				+ failedTaskDueToVmCapacityOnMobile[numOfAppTypes] + ")");
+
+//		printLine("# of failed tasks due to vm capacity (Edge/Cloud/Mobile): "
+//				+ failedTaskDueToVmCapacity[numOfAppTypes] + "("
+//				+ failedTaskDueToVmCapacityOnEdge[numOfAppTypes] + "/"
+//				+ failedTaskDueToVmCapacityOnCloud[numOfAppTypes] + "/"
+//				+ failedTaskDueToVmCapacityOnMobile[numOfAppTypes] + ")");
 		
 		printLine("# of failed tasks due to Mobility/Network(WLAN/MAN/WAN): "
 				+ failedTaskDuetoMobility[numOfAppTypes]
@@ -609,37 +640,75 @@ public class SimLogger {
 
 		printLine("average service time: "
 				+ String.format("%.6f", serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes])
-				+ " seconds. (" + "on Edge: "
-				+ String.format("%.6f", serviceTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
-				+ ", " + "on Cloud: "
+				+ " seconds. (" + "on Cloud: "
 				+ String.format("%.6f", serviceTimeOnCloud[numOfAppTypes] / (double) completedTaskOnCloud[numOfAppTypes])
+				+ ", " + "on Edge: "
+				+ String.format("%.6f", serviceTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
 				+ ", " + "on Mobile: "
 				+ String.format("%.6f", serviceTimeOnMobile[numOfAppTypes] / (double) completedTaskOnMobile[numOfAppTypes])
 				+ ")");
 
+
+//		printLine("average service time: "
+//				+ String.format("%.6f", serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes])
+//				+ " seconds. (" + "on Edge: "
+//				+ String.format("%.6f", serviceTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
+//				+ ", " + "on Cloud: "
+//				+ String.format("%.6f", serviceTimeOnCloud[numOfAppTypes] / (double) completedTaskOnCloud[numOfAppTypes])
+//				+ ", " + "on Mobile: "
+//				+ String.format("%.6f", serviceTimeOnMobile[numOfAppTypes] / (double) completedTaskOnMobile[numOfAppTypes])
+//				+ ")");
+
 		printLine("average processing time: "
 				+ String.format("%.6f", processingTime[numOfAppTypes] / (double) completedTask[numOfAppTypes])
-				+ " seconds. (" + "on Edge: "
-				+ String.format("%.6f", processingTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
-				+ ", " + "on Cloud: " 
+				+ " seconds. (" + "on Cloud: "
 				+ String.format("%.6f", processingTimeOnCloud[numOfAppTypes] / (double) completedTaskOnCloud[numOfAppTypes])
-				+ ", " + "on Mobile: " 
+				+ ", " +"on Edge: "
+				+ String.format("%.6f", processingTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
+				+ ", " +  "on Mobile: "
 				+ String.format("%.6f", processingTimeOnMobile[numOfAppTypes] / (double) completedTaskOnMobile[numOfAppTypes])
 				+ ")");
 
+
+//		printLine("average processing time: "
+//				+ String.format("%.6f", processingTime[numOfAppTypes] / (double) completedTask[numOfAppTypes])
+//				+ " seconds. (" + "on Edge: "
+//				+ String.format("%.6f", processingTimeOnEdge[numOfAppTypes] / (double) completedTaskOnEdge[numOfAppTypes])
+//				+ ", " + "on Cloud: "
+//				+ String.format("%.6f", processingTimeOnCloud[numOfAppTypes] / (double) completedTaskOnCloud[numOfAppTypes])
+//				+ ", " + "on Mobile: "
+//				+ String.format("%.6f", processingTimeOnMobile[numOfAppTypes] / (double) completedTaskOnMobile[numOfAppTypes])
+//				+ ")");
+
 		printLine("average network delay: "
 				+ String.format("%.6f", networkDelay[numOfAppTypes] / ((double) completedTask[numOfAppTypes] - (double) completedTaskOnMobile[numOfAppTypes]))
-				+ " seconds. (" + "LAN delay: "
-				+ String.format("%.6f", lanDelay[numOfAppTypes] / (double) lanUsage[numOfAppTypes])
+				+ " seconds. (" + "WAN delay: "
+				+ String.format("%.6f", wanDelay[numOfAppTypes] / (double) wanUsage[numOfAppTypes])
 				+ ", " + "MAN delay: "
 				+ String.format("%.6f", manDelay[numOfAppTypes] / (double) manUsage[numOfAppTypes])
-				+ ", " + "WAN delay: "
-				+ String.format("%.6f", wanDelay[numOfAppTypes] / (double) wanUsage[numOfAppTypes]) + ")");
+				+ ", " + "LAN delay: "
+				+ String.format("%.6f", lanDelay[numOfAppTypes] / (double) lanUsage[numOfAppTypes]) + ")");
 
-		printLine("average server utilization Edge/Cloud/Mobile: " 
-				+ String.format("%.6f", totalVmLoadOnEdge / (double) vmLoadList.size()) + "/"
+
+//		printLine("average network delay: "
+//				+ String.format("%.6f", networkDelay[numOfAppTypes] / ((double) completedTask[numOfAppTypes] - (double) completedTaskOnMobile[numOfAppTypes]))
+//				+ " seconds. (" + "LAN delay: "
+//				+ String.format("%.6f", lanDelay[numOfAppTypes] / (double) lanUsage[numOfAppTypes])
+//				+ ", " + "MAN delay: "
+//				+ String.format("%.6f", manDelay[numOfAppTypes] / (double) manUsage[numOfAppTypes])
+//				+ ", " + "WAN delay: "
+//				+ String.format("%.6f", wanDelay[numOfAppTypes] / (double) wanUsage[numOfAppTypes]) + ")");
+
+		printLine("average server utilization Cloud/Edge/Mobile: "
 				+ String.format("%.6f", totalVmLoadOnCloud / (double) vmLoadList.size()) + "/"
+				+ String.format("%.6f", totalVmLoadOnEdge / (double) vmLoadList.size()) + "/"
 				+ String.format("%.6f", totalVmLoadOnMobile / (double) vmLoadList.size()));
+
+
+//		printLine("average server utilization Edge/Cloud/Mobile: "
+//				+ String.format("%.6f", totalVmLoadOnEdge / (double) vmLoadList.size()) + "/"
+//				+ String.format("%.6f", totalVmLoadOnCloud / (double) vmLoadList.size()) + "/"
+//				+ String.format("%.6f", totalVmLoadOnMobile / (double) vmLoadList.size()));
 		
 		printLine("average cost: " + cost[numOfAppTypes] / completedTask[numOfAppTypes] + "$");
 
